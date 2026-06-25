@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { AgentTabs } from "./agent-tabs";
 import type { AgentMode, Citation, Doc } from "@/lib/types";
 import { Send } from "lucide-react";
+import { getConfigHeaders, isConfigured } from "@/lib/fetch-config";
 
 type ToolInvocationLike = { result?: { citations?: Citation[] } };
 
@@ -22,6 +23,7 @@ export function ChatPanel({
   const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
     api: "/api/chat",
     body: { agent },
+    headers: getConfigHeaders(),
     onFinish: (msg) => {
       const toolInvocations = (msg as unknown as { toolInvocations?: ToolInvocationLike[] })
         .toolInvocations;
@@ -32,6 +34,14 @@ export function ChatPanel({
       }
     },
   });
+
+  const [configured, setConfigured] = useState(false);
+  useEffect(() => {
+    const update = () => setConfigured(isConfigured());
+    update();
+    window.addEventListener("studysync-config-change", update);
+    return () => window.removeEventListener("studysync-config-change", update);
+  }, []);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -46,7 +56,9 @@ export function ChatPanel({
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            {docs.length === 0
+            {!configured
+              ? "Open Settings (gear icon) to add your API key."
+              : docs.length === 0
               ? "Upload a PDF to get started."
               : `Ask a question across ${docs.length} document${docs.length > 1 ? "s" : ""}.`}
           </p>
@@ -68,10 +80,10 @@ export function ChatPanel({
         <Input
           value={input}
           onChange={handleInputChange}
-          placeholder={`Ask ${agent}...`}
-          disabled={isLoading || docs.length === 0}
+          placeholder={configured ? `Ask ${agent}...` : "Add API key in Settings first"}
+          disabled={isLoading || docs.length === 0 || !configured}
         />
-        <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+        <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !configured}>
           <Send className="h-4 w-4" />
         </Button>
       </form>

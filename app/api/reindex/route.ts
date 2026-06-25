@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { listPdfs } from "@/lib/blob";
 import { addDoc, isEmpty, getDoc } from "@/lib/store";
 import { chunkPages, setChunkDocId } from "@/lib/chunker";
 import { embedTexts } from "@/lib/embed";
+import { readConfig } from "@/lib/server-config";
 import pdf from "pdf-parse";
 import type { EmbedName } from "@/lib/providers";
 
@@ -10,8 +11,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-export async function POST() {
-  const embedProvider = (process.env.EMBED_PROVIDER ?? "gemini") as EmbedName;
+export async function POST(req: NextRequest) {
+  const cfg = readConfig(req.headers);
+  const embedProvider = cfg.embedProvider as EmbedName;
   const blobs = await listPdfs();
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
 
@@ -29,7 +31,7 @@ export async function POST() {
         .filter((p) => p.text.trim());
       const rawChunks = chunkPages(pages, 1000, 200);
       const docChunks = setChunkDocId(rawChunks, id);
-      const vecs = await embedTexts(docChunks.map((c) => c.text), embedProvider);
+      const vecs = await embedTexts(docChunks.map((c) => c.text), embedProvider, cfg.apiKey);
       const embedded = docChunks.map((c, i) => ({ ...c, embedding: vecs[i] }));
       addDoc({
         doc: {

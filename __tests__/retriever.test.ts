@@ -17,13 +17,13 @@ vi.mock("@/lib/store", () => ({
 
 describe("retrieve", () => {
   it("returns top-k chunks by similarity", async () => {
-    const results = await retrieve("how does photosynthesis work", 2, "gemini");
+    const results = await retrieve("how does photosynthesis work", 2, "gemini", "");
     expect(results).toHaveLength(2);
     expect(results[0].text.toLowerCase()).toContain("photosynthesis");
   });
 
   it("includes citation metadata", async () => {
-    const results = await retrieve("photosynthesis", 1, "gemini");
+    const results = await retrieve("photosynthesis", 1, "gemini", "");
     expect(results[0]).toMatchObject({ docId: expect.any(String), filename: expect.any(String), page: expect.any(Number) });
   });
 });

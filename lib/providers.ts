@@ -7,20 +7,30 @@ export type EmbedName = "gemini" | "ollama-nomic" | "ollama-mxbai" | "ollama-bge
 
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? "https://ollama.com";
 
-export function getChatModel(name: ProviderName): LanguageModelV1 {
+export function getChatModel(name: ProviderName, apiKey: string): LanguageModelV1 {
   switch (name) {
-    case "gemini":
+    case "gemini": {
+      const key = apiKey || process.env.GEMINI_API_KEY || "";
+      if (!key) throw new Error("Gemini API key missing — set in Settings");
+      process.env.GEMINI_API_KEY = key;
       return google("gemini-2.0-flash") as unknown as LanguageModelV1;
+    }
     case "ollama-llama": {
-      const ollama = createOllama({ baseURL: OLLAMA_BASE });
+      const key = apiKey || process.env.OLLAMA_CLOUD_API_KEY || "";
+      if (!key) throw new Error("Ollama API key missing — set in Settings");
+      const ollama = createOllama({ baseURL: OLLAMA_BASE, headers: { Authorization: `Bearer ${key}` } });
       return ollama("llama3.1:8b") as unknown as LanguageModelV1;
     }
     case "ollama-mistral": {
-      const ollama = createOllama({ baseURL: OLLAMA_BASE });
+      const key = apiKey || process.env.OLLAMA_CLOUD_API_KEY || "";
+      if (!key) throw new Error("Ollama API key missing — set in Settings");
+      const ollama = createOllama({ baseURL: OLLAMA_BASE, headers: { Authorization: `Bearer ${key}` } });
       return ollama("mistral-small") as unknown as LanguageModelV1;
     }
     case "ollama-qwen": {
-      const ollama = createOllama({ baseURL: OLLAMA_BASE });
+      const key = apiKey || process.env.OLLAMA_CLOUD_API_KEY || "";
+      if (!key) throw new Error("Ollama API key missing — set in Settings");
+      const ollama = createOllama({ baseURL: OLLAMA_BASE, headers: { Authorization: `Bearer ${key}` } });
       return ollama("qwen2.5:7b") as unknown as LanguageModelV1;
     }
   }

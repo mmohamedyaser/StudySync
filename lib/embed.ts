@@ -1,14 +1,21 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { EmbedName } from "./providers";
 
-const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? "https://ollama.com";
 export const GEMINI_DIM = 768;
 export const OLLAMA_DIM = 1024;
 
-export async function embedTexts(texts: string[], provider: EmbedName): Promise<number[][]> {
+const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? "https://ollama.com";
+
+export async function embedTexts(
+  texts: string[],
+  provider: EmbedName,
+  apiKey: string
+): Promise<number[][]> {
+  const key = apiKey || process.env.GEMINI_API_KEY || "";
   switch (provider) {
     case "gemini": {
-      const gen = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+      if (!key) throw new Error("Gemini API key missing — set in Settings");
+      const gen = new GoogleGenerativeAI(key);
       const model = gen.getGenerativeModel({ model: "text-embedding-004" });
       const out: number[][] = [];
       for (const text of texts) {
@@ -24,6 +31,8 @@ export async function embedTexts(texts: string[], provider: EmbedName): Promise<
     case "ollama-nomic":
     case "ollama-mxbai":
     case "ollama-bge": {
+      const keyOllama = apiKey || process.env.OLLAMA_CLOUD_API_KEY || "";
+      if (!keyOllama) throw new Error("Ollama API key missing — set in Settings");
       const modelName =
         provider === "ollama-nomic"
           ? "nomic-embed-text"
@@ -34,7 +43,7 @@ export async function embedTexts(texts: string[], provider: EmbedName): Promise<
       for (const text of texts) {
         const res = await fetch(`${OLLAMA_BASE}/api/embeddings`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OLLAMA_CLOUD_API_KEY ?? ""}` },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${keyOllama}` },
           body: JSON.stringify({ model: modelName, prompt: text }),
         });
         if (!res.ok) throw new Error(`ollama embed failed: ${res.status}`);

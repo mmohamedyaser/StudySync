@@ -6,8 +6,13 @@ import { topKSimilar } from "@/lib/cosine";
 import type { Citation } from "@/lib/types";
 import type { EmbedName } from "@/lib/providers";
 
-export async function retrieve(query: string, k: number, embedProvider: EmbedName): Promise<Citation[]> {
-  const [qVec] = await embedTexts([query], embedProvider);
+export async function retrieve(
+  query: string,
+  k: number,
+  embedProvider: EmbedName,
+  apiKey: string
+): Promise<Citation[]> {
+  const [qVec] = await embedTexts([query], embedProvider, apiKey);
   const chunks = getAllChunks();
   if (chunks.length === 0) return [];
   const top = topKSimilar(qVec, chunks, k);
@@ -19,7 +24,7 @@ export async function retrieve(query: string, k: number, embedProvider: EmbedNam
   }));
 }
 
-export const retrieverTool = (embedProvider: EmbedName) =>
+export const retrieverTool = (embedProvider: EmbedName, apiKey: string) =>
   tool({
     description:
       "Search uploaded PDFs for chunks relevant to the query. Returns top-k passages with page citations. Use this whenever the student asks about material from their documents.",
@@ -28,7 +33,7 @@ export const retrieverTool = (embedProvider: EmbedName) =>
       k: z.number().int().min(1).max(10).default(5).describe("Number of chunks to return"),
     }),
     execute: async ({ query, k }) => {
-      const citations = await retrieve(query, k, embedProvider);
+      const citations = await retrieve(query, k, embedProvider, apiKey);
       return { citations };
     },
   });

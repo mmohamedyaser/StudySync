@@ -8,6 +8,7 @@ import { explainerTool } from "@/lib/tools/explainer";
 import { systemPrompt } from "@/lib/prompts";
 import { isEmpty } from "@/lib/store";
 import { listPdfs } from "@/lib/blob";
+import { readConfig } from "@/lib/server-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,22 +20,30 @@ type Body = {
 };
 
 export async function POST(req: NextRequest) {
+  const cfg = readConfig(req.headers);
   const body = (await req.json()) as Body;
-  const provider = (process.env.LLM_PROVIDER ?? "gemini") as ProviderName;
-  const embedProvider = (process.env.EMBED_PROVIDER ?? "gemini") as EmbedName;
+  const provider = cfg.llmProvider as ProviderName;
+  const embedProvider = cfg.embedProvider as EmbedName;
 
   if (isEmpty()) {
     const blobs = await listPdfs();
     if (blobs.length > 0) {
-      await fetch(new URL("/api/reindex", req.url), { method: "POST" });
+      await fetch(new URL("/api/reindex", req.url), {
+        method: "POST",
+        headers: {
+          "x-api-key": cfg.apiKey,
+          "x-llm-provider": cfg.llmProvider,
+          "x-embed-provider": cfg.embedProvider,
+        },
+      });
     }
   }
 
   const allTools = {
-    retriever: retrieverTool(embedProvider),
-    mapper: mapperTool(embedProvider),
-    quiz: quizTool(embedProvider),
-    explainer: explainerTool(embedProvider),
+    retriever: retrieverTool(embedProvider, cfg.apiKey),
+    mapper: mapperTool(embedProvider, cfg.apiKey),
+    quiz: quizTool(embedProvider, cfg.apiKey),
+    explainer: explainerTool(embedProvider, cfg.apiKey),
   };
 
   const toolsForMode = {
@@ -45,7 +54,7 @@ export async function POST(req: NextRequest) {
   } as const;
 
   const result = await streamText({
-    model: getChatModel(provider),
+    model: getChatModel(provider, cfg.apiKey),
     system: systemPrompt(body.agent),
     messages: body.messages,
     tools: toolsForMode[body.agent],

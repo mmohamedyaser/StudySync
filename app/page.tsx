@@ -5,6 +5,8 @@ import { PdfViewer } from "@/components/pdf-viewer";
 import { ChatPanel } from "@/components/chat-panel";
 import { CitationsPanel } from "@/components/citations-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SettingsDialog } from "@/components/settings-dialog";
+import { getConfigHeaders } from "@/lib/fetch-config";
 import type { Citation, Doc } from "@/lib/types";
 
 export default function Home() {
@@ -14,7 +16,7 @@ export default function Home() {
   const [jumpPage, setJumpPage] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/docs")
+    fetch("/api/docs", { headers: getConfigHeaders() })
       .then((r) => r.json())
       .then((data: { indexed: Doc[] }) => {
         if (Array.isArray(data.indexed)) setDocs(data.indexed);
@@ -26,7 +28,10 @@ export default function Home() {
     <div className="flex h-screen flex-col">
       <header className="flex items-center justify-between border-b px-4 py-2 shrink-0">
         <h1 className="text-lg font-semibold">StudySync</h1>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <SettingsDialog />
+          <ThemeToggle />
+        </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 border-r overflow-y-auto shrink-0">

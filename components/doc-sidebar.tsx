@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2 } from "lucide-react";
+import { getConfigHeaders, isConfigured } from "@/lib/fetch-config";
 import type { Doc } from "@/lib/types";
 
 export function DocSidebar({
@@ -26,7 +27,11 @@ export function DocSidebar({
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+        headers: getConfigHeaders(),
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         alert((err as { error?: string }).error ?? "Upload failed");
@@ -43,7 +48,7 @@ export function DocSidebar({
 
   async function onDelete(id: string) {
     if (!confirm("Delete this document?")) return;
-    await fetch(`/api/docs/${id}`, { method: "DELETE" });
+    await fetch(`/api/docs/${id}`, { method: "DELETE", headers: getConfigHeaders() });
     setDocs((prev) => prev.filter((d) => d.id !== id));
     if (selectedDocId === id) setSelectedDocId(null);
   }
