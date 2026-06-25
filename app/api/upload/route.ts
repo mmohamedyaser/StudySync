@@ -4,7 +4,7 @@ import { chunkPages, setChunkDocId } from "@/lib/chunker";
 import { embedTexts } from "@/lib/embed";
 import { addDoc, withLock } from "@/lib/store";
 import { readConfig } from "@/lib/server-config";
-import pdf from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 import crypto from "crypto";
 import type { EmbedName } from "@/lib/providers";
 
@@ -29,12 +29,18 @@ export async function POST(req: NextRequest) {
   const safeName = file.name.replace(/[^\w.\-]/g, "_").slice(0, 120);
   const blobUrl = await uploadPdf(file, `${docId}-${safeName}`);
 
-  const buf = Buffer.from(await file.arrayBuffer());
-  const parsed = await pdf(buf);
-  const pages = parsed.text
-    .split(/\f/)
-    .map((t, i) => ({ page: i + 1, text: t }))
-    .filter((p) => p.text.trim());
+  let pages: { page: number; text: string }[] = [];
+  try {
+    const buf = Buffer.from(await file.arrayBuffer());
+    const parsed = await pdf(buf);
+    pages = parsed.text
+      .split(/\f/)
+      .map((t, i) => ({ page: i + 1, text: t }))
+      .filter((p) => p.text.trim());
+  } catch (e) {
+    console.error("pdf-parse failed", e);
+    return NextResponse.json({ error: `PDF parse failed: ${(e as Error).message}` }, { status: 500 });
+  }
 
   const rawChunks = chunkPages(pages, 1000, 200);
   const docChunks = setChunkDocId(rawChunks, docId);

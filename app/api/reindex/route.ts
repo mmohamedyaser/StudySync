@@ -4,7 +4,7 @@ import { addDoc, isEmpty, getDoc } from "@/lib/store";
 import { chunkPages, setChunkDocId } from "@/lib/chunker";
 import { embedTexts } from "@/lib/embed";
 import { readConfig } from "@/lib/server-config";
-import pdf from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 import type { EmbedName } from "@/lib/providers";
 
 export const runtime = "nodejs";
