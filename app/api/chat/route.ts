@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   } as const;
 
   const result = await streamText({
-    model: getChatModel(provider, cfg.apiKey),
+    model: getChatModel(provider, cfg.apiKey, cfg.geminiModel),
     system: systemPrompt(body.agent),
     messages: body.messages,
     tools: toolsForMode[body.agent],

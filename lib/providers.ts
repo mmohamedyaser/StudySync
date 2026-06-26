@@ -7,13 +7,14 @@ export type EmbedName = "gemini" | "ollama-nomic" | "ollama-mxbai" | "ollama-bge
 
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? "https://ollama.com";
 
-export function getChatModel(name: ProviderName, apiKey: string): LanguageModelV1 {
+export function getChatModel(name: ProviderName, apiKey: string, geminiModel?: string): LanguageModelV1 {
   switch (name) {
     case "gemini": {
       const key = apiKey || process.env.GEMINI_API_KEY || "";
       if (!key) throw new Error("Gemini API key missing — set in Settings");
       process.env.GEMINI_API_KEY = key;
-      return google("gemini-2.0-flash") as unknown as LanguageModelV1;
+      const modelName = geminiModel || "gemini-2.0-flash";
+      return google(modelName) as unknown as LanguageModelV1;
     }
     case "ollama-llama": {
       const key = apiKey || process.env.OLLAMA_CLOUD_API_KEY || "";
