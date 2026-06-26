@@ -18,32 +18,39 @@ type Body = {
 };
 
 export async function POST(req: NextRequest) {
-  const cfg = readConfig(req.headers);
-  const body = (await req.json()) as Body;
-  const provider = cfg.llmProvider as ProviderName;
+  try {
+    const cfg = readConfig(req.headers);
+    const body = (await req.json()) as Body;
+    const provider = cfg.llmProvider as ProviderName;
 
-  const allTools = {
-    retriever: retrieverTool(),
-    mapper: mapperTool(),
-    quiz: quizTool(),
-    explainer: explainerTool(),
-  };
+    const allTools = {
+      retriever: retrieverTool(),
+      mapper: mapperTool(),
+      quiz: quizTool(),
+      explainer: explainerTool(),
+    };
 
-  const toolsForMode = {
-    retriever: { retriever: allTools.retriever },
-    mapper: { mapper: allTools.mapper },
-    quiz: { quiz: allTools.quiz },
-    explainer: { explainer: allTools.explainer },
-  } as const;
+    const toolsForMode = {
+      retriever: { retriever: allTools.retriever },
+      mapper: { mapper: allTools.mapper },
+      quiz: { quiz: allTools.quiz },
+      explainer: { explainer: allTools.explainer },
+    } as const;
 
-  const result = await streamText({
-    model: getChatModel(provider, cfg.apiKey, cfg.geminiModel),
-    system: systemPrompt(body.agent),
-    messages: body.messages,
-    tools: toolsForMode[body.agent],
-    toolChoice: "required",
-    maxSteps: 4,
-  });
+    const result = await streamText({
+      model: getChatModel(provider, cfg.apiKey, cfg.geminiModel),
+      system: systemPrompt(body.agent),
+      messages: body.messages,
+      tools: toolsForMode[body.agent],
+      maxSteps: 4,
+    });
 
-  return result.toDataStreamResponse();
+    return result.toDataStreamResponse();
+  } catch (e) {
+    console.error("chat failed", e);
+    return new Response(
+      JSON.stringify({ error: `chat failed: ${(e as Error).message}` }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
