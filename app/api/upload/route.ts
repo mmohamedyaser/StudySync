@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chunkPages, setChunkDocId } from "@/lib/chunker";
-import { embedTexts } from "@/lib/embed";
 import { addDoc, withLock } from "@/lib/store";
 import { readConfig } from "@/lib/server-config";
 import pdf from "pdf-parse/lib/pdf-parse.js";
 import crypto from "crypto";
-import type { EmbedName } from "@/lib/providers";
 
 export const runtime = "nodejs";
 const MAX_MB = Number(process.env.MAX_UPLOAD_MB ?? "50");
 
 export async function POST(req: NextRequest) {
   try {
-    const cfg = readConfig(req.headers);
+    const _cfg = readConfig(req.headers);
     const form = await req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
@@ -36,15 +34,8 @@ export async function POST(req: NextRequest) {
     const rawChunks = chunkPages(pages, 1000, 200);
     const docChunks = setChunkDocId(rawChunks, docId);
 
-    const embedProvider = cfg.embedProvider as EmbedName;
-    const batchSize = 16;
-    const embedded: typeof docChunks = [];
     await withLock(docId, async () => {
-      for (let i = 0; i < docChunks.length; i += batchSize) {
-        const batch = docChunks.slice(i, i + batchSize);
-        const vecs = await embedTexts(batch.map((c) => c.text), embedProvider, cfg.apiKey);
-        batch.forEach((c, j) => embedded.push({ ...c, embedding: vecs[j] }));
-      }
+      // no embedding step — chunks stored as-is for keyword search
     });
 
     addDoc({
@@ -54,7 +45,7 @@ export async function POST(req: NextRequest) {
         pageCount: pages.length || 1,
         uploadedAt: Date.now(),
       },
-      chunks: embedded,
+      chunks: docChunks,
       data: buf,
     });
 

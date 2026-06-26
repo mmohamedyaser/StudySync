@@ -9,7 +9,7 @@ type GeminiModel = { name: string; displayName: string; methods: string[] };
 
 export function SettingsDialog() {
   const [open, setOpen] = useState(false);
-  const [cfg, setCfg] = useState<ClientConfig>({ llmProvider: "gemini", embedProvider: "gemini", apiKey: "", geminiModel: "gemini-2.0-flash" });
+  const [cfg, setCfg] = useState<ClientConfig>({ llmProvider: "gemini", apiKey: "", geminiModel: "gemini-2.0-flash" });
   const [saved, setSaved] = useState(false);
   const [models, setModels] = useState<GeminiModel[]>([]);
   const [pulling, setPulling] = useState(false);
@@ -51,7 +51,7 @@ export function SettingsDialog() {
 
   function onClear() {
     clearConfig();
-    setCfg({ llmProvider: "gemini", embedProvider: "gemini", apiKey: "", geminiModel: "gemini-2.0-flash" });
+    setCfg({ llmProvider: "gemini", apiKey: "", geminiModel: "gemini-2.0-flash" });
     setModels([]);
     setSaved(true);
   }
@@ -140,27 +140,10 @@ export function SettingsDialog() {
               />
             )}
             <p className="text-xs text-muted-foreground">
-              Enter key above, click refresh icon to pull available models.
+              Enter key above, click pull button to fetch available models.
             </p>
           </div>
         )}
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Embeddings Provider</label>
-          <select
-            className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-            value={cfg.embedProvider}
-            onChange={(e) => {
-              const embed = e.target.value as ClientConfig["embedProvider"];
-              setCfg((prev) => ({ ...prev, embedProvider: embed }));
-            }}
-          >
-            <option value="gemini">Gemini text-embedding-004</option>
-            <option value="ollama-nomic">Ollama nomic-embed-text</option>
-            <option value="ollama-mxbai">Ollama mxbai-embed-large</option>
-            <option value="ollama-bge">Ollama bge-m3</option>
-          </select>
-        </div>
 
         <div className="flex justify-between gap-2 pt-2">
           <Button variant="outline" onClick={onClear}>Clear</Button>

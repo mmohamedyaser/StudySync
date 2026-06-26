@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { streamText } from "ai";
-import { getChatModel, type ProviderName, type EmbedName } from "@/lib/providers";
+import { getChatModel, type ProviderName } from "@/lib/providers";
 import { retrieverTool } from "@/lib/tools/retriever";
 import { mapperTool } from "@/lib/tools/mapper";
 import { quizTool } from "@/lib/tools/quiz";
@@ -21,13 +21,12 @@ export async function POST(req: NextRequest) {
   const cfg = readConfig(req.headers);
   const body = (await req.json()) as Body;
   const provider = cfg.llmProvider as ProviderName;
-  const embedProvider = cfg.embedProvider as EmbedName;
 
   const allTools = {
-    retriever: retrieverTool(embedProvider, cfg.apiKey),
-    mapper: mapperTool(embedProvider, cfg.apiKey),
-    quiz: quizTool(embedProvider, cfg.apiKey),
-    explainer: explainerTool(embedProvider, cfg.apiKey),
+    retriever: retrieverTool(),
+    mapper: mapperTool(),
+    quiz: quizTool(),
+    explainer: explainerTool(),
   };
 
   const toolsForMode = {

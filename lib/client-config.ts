@@ -2,16 +2,14 @@
 
 export type ClientConfig = {
   llmProvider: "gemini" | "ollama-llama" | "ollama-mistral" | "ollama-qwen";
-  embedProvider: "gemini" | "ollama-nomic" | "ollama-mxbai" | "ollama-bge";
   apiKey: string;
   geminiModel?: string;
 };
 
-const KEY = "studysync.config.v1";
+const KEY = "studysync.config.v2";
 
 const DEFAULTS: ClientConfig = {
   llmProvider: "gemini",
-  embedProvider: "gemini",
   apiKey: "",
   geminiModel: "gemini-2.0-flash",
 };

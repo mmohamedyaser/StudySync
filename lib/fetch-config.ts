@@ -6,7 +6,6 @@ export function getConfigHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     "x-api-key": cfg.apiKey,
     "x-llm-provider": cfg.llmProvider,
-    "x-embed-provider": cfg.embedProvider,
   };
   if (cfg.geminiModel) headers["x-gemini-model"] = cfg.geminiModel;
   return headers;

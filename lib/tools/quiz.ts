@@ -1,9 +1,8 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { retrieve } from "./retriever";
-import type { EmbedName } from "@/lib/providers";
 
-export const quizTool = (embedProvider: EmbedName, apiKey: string) =>
+export const quizTool = () =>
   tool({
     description:
       "Generate a practice quiz (MCQ + short-answer) from material relevant to the topic. Returns citations to source chunks.",
@@ -12,7 +11,7 @@ export const quizTool = (embedProvider: EmbedName, apiKey: string) =>
       numQuestions: z.number().int().min(1).max(10).default(5),
     }),
     execute: async ({ topic, numQuestions }) => {
-      const citations = await retrieve(topic, Math.max(numQuestions * 2, 6), embedProvider, apiKey);
+      const citations = await retrieve(topic, Math.max(numQuestions * 2, 6));
       return { citations, topic, numQuestions };
     },
   });
