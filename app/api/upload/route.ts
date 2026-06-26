@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadPdf } from "@/lib/blob";
 import { chunkPages, setChunkDocId } from "@/lib/chunker";
 import { embedTexts } from "@/lib/embed";
 import { addDoc, withLock } from "@/lib/store";
@@ -9,7 +8,7 @@ import crypto from "crypto";
 import type { EmbedName } from "@/lib/providers";
 
 export const runtime = "nodejs";
-const MAX_MB = Number(process.env.MAX_UPLOAD_MB ?? "10");
+const MAX_MB = Number(process.env.MAX_UPLOAD_MB ?? "50");
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,9 +26,6 @@ export async function POST(req: NextRequest) {
     }
 
     const docId = crypto.randomBytes(8).toString("hex");
-    const safeName = file.name.replace(/[^\w.\-]/g, "_").slice(0, 120);
-    const blobUrl = await uploadPdf(file, `${docId}-${safeName}`);
-
     const buf = Buffer.from(await file.arrayBuffer());
     const parsed = await pdf(buf);
     const pages = parsed.text
@@ -55,11 +51,11 @@ export async function POST(req: NextRequest) {
       doc: {
         id: docId,
         filename: file.name,
-        blobUrl,
         pageCount: pages.length || 1,
         uploadedAt: Date.now(),
       },
       chunks: embedded,
+      data: buf,
     });
 
     return NextResponse.json({

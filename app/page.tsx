@@ -18,8 +18,8 @@ export default function Home() {
   useEffect(() => {
     fetch("/api/docs", { headers: getConfigHeaders() })
       .then((r) => r.json())
-      .then((data: { indexed: Doc[] }) => {
-        if (Array.isArray(data.indexed)) setDocs(data.indexed);
+      .then((data: { docs: Doc[] }) => {
+        if (Array.isArray(data.docs)) setDocs(data.docs);
       })
       .catch(() => null);
   }, []);

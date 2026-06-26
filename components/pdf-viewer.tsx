@@ -41,7 +41,7 @@ export function PdfViewer({
         </span>
       </div>
       <Document
-        file={doc.blobUrl}
+        file={`/api/docs/${doc.id}/raw`}
         onLoadSuccess={({ numPages }) => setNumPages(numPages)}
         loading={<p className="text-sm">Loading PDF...</p>}
         error={<p className="text-sm text-destructive">Failed to load PDF</p>}

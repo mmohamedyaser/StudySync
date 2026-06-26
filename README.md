@@ -4,27 +4,24 @@ Agentic multi-document Q&A for students. Upload PDFs (textbooks, notes, question
 
 ## Stack
 
-Next.js 14 (App Router, TS) · Vercel AI SDK · shadcn/ui · Vercel Blob · Gemini + Ollama Cloud
+Next.js 14 (App Router, TS) · Vercel AI SDK · shadcn/ui · Gemini + Ollama Cloud
 
 ## Setup
 
 1. `npm install`
-2. Copy `.env.local.example` → `.env.local`, fill in:
-   - `BLOB_READ_WRITE_TOKEN` (Vercel Blob)
-   - `GEMINI_API_KEY` (if using Gemini)
-   - `OLLAMA_CLOUD_API_KEY` (if using Ollama)
-   - `LLM_PROVIDER` = `gemini` | `ollama-llama` | `ollama-mistral` | `ollama-qwen`
-   - `EMBED_PROVIDER` = `gemini` | `ollama-nomic` | `ollama-mxbai` | `ollama-bge`
-3. `npm run dev`
+2. `npm run dev`
+3. Open app, click Settings (gear icon), enter API key, pick provider, save.
+
+No env vars required. API keys stored in browser localStorage.
 
 ## Deploy
 
-Vercel → New Project → import repo. Add env vars in Project Settings. Deploy.
+Vercel → New Project → import repo. Deploy. No storage config needed.
 
 ## Caveats
 
-- No database. Vectors in memory, lost on cold start. Chat history lost too. PDFs persist in Blob.
-- Cold start re-embeds all docs (2-5s for typical PDFs).
+- No database. Vectors + PDF buffers in memory, lost on cold start.
+- Chat history not persisted.
 - Single-user, no auth.
 
 ## Spec & Plan

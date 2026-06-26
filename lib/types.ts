@@ -3,7 +3,6 @@ export type AgentMode = "retriever" | "mapper" | "quiz" | "explainer";
 export type Doc = {
   id: string;
   filename: string;
-  blobUrl: string;
   pageCount: number;
   uploadedAt: number;
 };
@@ -18,6 +17,7 @@ export type Chunk = {
 export type DocState = {
   doc: Doc;
   chunks: Chunk[];
+  data: Buffer;
 };
 
 export type Citation = {
