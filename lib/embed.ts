@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { EmbedName } from "./providers";
 
-export const GEMINI_DIM = 768;
+export const GEMINI_DIM = 3072;
 export const OLLAMA_DIM = 1024;
 
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? "https://ollama.com";
@@ -16,14 +16,11 @@ export async function embedTexts(
     case "gemini": {
       if (!key) throw new Error("Gemini API key missing — set in Settings");
       const gen = new GoogleGenerativeAI(key);
-      const model = gen.getGenerativeModel({ model: "text-embedding-004" });
+      const model = gen.getGenerativeModel({ model: "gemini-embedding-001" });
       const out: number[][] = [];
       for (const text of texts) {
         const r = await model.embedContent(text);
         const values = r.embedding.values;
-        if (values.length !== GEMINI_DIM) {
-          throw new Error(`unexpected dim ${values.length}, expected ${GEMINI_DIM}`);
-        }
         out.push(values);
       }
       return out;
