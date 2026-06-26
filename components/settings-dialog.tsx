@@ -79,24 +79,21 @@ export function SettingsDialog() {
 
         <div className="space-y-2">
           <label className="text-sm font-medium">API Key</label>
-          <div className="flex gap-2">
-            <Input
-              type="password"
-              placeholder="Gemini API key"
-              value={cfg.apiKey}
-              onChange={(e) => setCfg((prev) => ({ ...prev, apiKey: e.target.value }))}
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={pullModels}
-              disabled={!cfg.apiKey.trim() || pulling}
-              aria-label="Pull models"
-              title="Pull available Gemini models"
-            >
-              <RefreshCw className={`h-4 w-4 ${pulling ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
+          <Input
+            type="password"
+            placeholder="Gemini API key"
+            value={cfg.apiKey}
+            onChange={(e) => setCfg((prev) => ({ ...prev, apiKey: e.target.value }))}
+          />
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={pullModels}
+            disabled={!cfg.apiKey.trim() || pulling}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${pulling ? "animate-spin" : ""}`} />
+            {pulling ? "Pulling..." : "Pull available Gemini models"}
+          </Button>
           {pullErr && <p className="text-xs text-destructive">{pullErr}</p>}
         </div>
 
